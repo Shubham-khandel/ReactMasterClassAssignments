@@ -1,25 +1,127 @@
-import logo from './logo.svg';
 import './App.css';
+import { useState } from 'react';
+
+const itemData = [
+  { id: 1, name: 'Sugar', price: 10 },
+  { id: 2, name: 'Grapes', price: 20 },
+  { id: 3, name: 'Banana', price: 10 },
+  { id: 4, name: 'Kiwi', price: 70 },
+];
 
 function App() {
+  const [customerName, setCustomerName] = useState('');
+  const [items, setItems] = useState([{ item: '', quantity: '', price: 0 }]);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleAddItem = () => {
+    setItems([...items, { item: '', quantity: '', price: 0 }]);
+  };
+
+  const handleInputChange = (event, index) => {
+    const { name, value } = event.target;
+    const list = [...items];
+    if (name === 'item') {
+      const selectedItem = itemData.find((item) => item.name === value);
+      list[index]['price'] = selectedItem.price;
+    }
+    list[index][name] = value;
+    setItems(list);
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    // console.log({ customerName, items });
+    setSubmitted(true);
+  };
+
+  const calculateTotal = () => {
+    return items.reduce((total, item) => {
+      return total + item.quantity * item.price;
+    }, 0);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>
+            Customer Name:
+            <input
+              type="text"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+            />
+          </label>
+        </div>
+        {items.map((item, index) => (
+          <div key={index}>
+            <label>
+              Item:
+              <select
+                name="item"
+                value={item.item}
+                onChange={(e) => handleInputChange(e, index)}
+              >
+                <option value="">Select an item</option>
+                {itemData.map((item) => (
+                  <option key={item.id} value={item.name}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Quantity:
+              <input
+                type="number"
+                name="quantity"
+                value={item.quantity}
+                onChange={(e) => handleInputChange(e, index)}
+              />
+            </label>
+          </div>
+        ))}
+        <button type="button" onClick={handleAddItem}>
+          Add More Items
+        </button>
+        <button type="submit">Submit</button>
+      </form>
+      {submitted && (
+        <div>
+          <Table customerName={customerName} items={items} />
+          <div>Total Bill: {calculateTotal()}</div>
+        </div>
+      )}
     </div>
   );
 }
+
+function Table(props) {
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Customer Name</th>
+          <th>Item</th>
+          <th>Quantity</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        {props.items.map((item, index) => (
+          <tr key={index}>
+            {index === 0 && (
+              <td rowSpan={props.items.length}>{props.customerName}</td>
+            )}
+            <td>{item.item}</td>
+            <td>{item.quantity}</td>
+            <td>{item.price}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 
 export default App;
